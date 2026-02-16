@@ -88,8 +88,7 @@ make clean    # Remove output/, data/synthetic/*, _targets/
 | `output/` | Pipeline outputs and reports |
 | `docker/` | Container image for pipeline execution |
 | `k8s/base/` | CronJob + ConfigMap + EmptyDir; `k8s/overlays/dev/` for environment-specific config |
-| `.github/workflows/ci.yml` | CI (lint, test, report, artifacts) |
-| `.github/workflows/pages.yml` | Pages (build report, deploy to GitHub Pages) |
+| `.github/workflows/ci.yml` | CI (lint, test, report, artifacts) + deploy to GitHub Pages on main |
 
 ---
 
@@ -104,7 +103,7 @@ make clean    # Remove output/, data/synthetic/*, _targets/
 
 Enable **Settings → Pages → Source: GitHub Actions**. After pushing to `main`, the report is published at `https://<user>.github.io/<repo>/`.
 
-The report is also available as a CI artifact (`phds-report`) on every run (PR and push)—download it from the Actions run summary. The Pages workflow copies `report.html` to `index.html` automatically so the site root serves the report.
+The report is also available as a CI artifact (`phds-report`) on every run (PR and push)—download it from the Actions run summary. The CI workflow copies `report.html` to `index.html` before deploy so the site root serves the report.
 
 ---
 
