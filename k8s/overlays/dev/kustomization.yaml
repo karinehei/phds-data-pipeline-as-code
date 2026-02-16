@@ -1,0 +1,29 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: phds-dev
+
+resources:
+  - ../../base
+
+patches:
+  - target:
+      kind: CronJob
+      name: phds-pipeline
+    patch: |-
+      - op: replace
+        path: /spec/schedule
+        value: "0 */6 * * *"
+      - op: replace
+        path: /spec/jobTemplate/spec/template/spec/containers/0/image
+        value: phds-pipeline:dev
+  - target:
+      kind: ConfigMap
+      name: phds-pipeline-config
+    patch: |-
+      - op: replace
+        path: /data/N_PATIENTS
+        value: "50"
+      - op: replace
+        path: /data/N_VISITS
+        value: "200"

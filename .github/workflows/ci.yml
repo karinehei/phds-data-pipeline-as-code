@@ -1,0 +1,84 @@
+# CI: lint, test, report, artifacts. Optional: deploy to GitHub Pages on main.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  pipeline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up R
+        uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: "4.3"
+
+      - name: Install Quarto
+        uses: quarto-dev/quarto-actions/setup@v2
+
+      - name: Install dependencies (renv)
+        if: hashFiles('renv.lock') != ''
+        uses: r-lib/actions/setup-renv@v2
+
+      - name: Install dependencies (fallback)
+        if: hashFiles('renv.lock') == ''
+        run: |
+          Rscript -e "pkgs <- c('targets','yaml','arrow','quarto','testthat','ggplot2','lintr'); for (p in pkgs) if (!requireNamespace(p, quietly=TRUE)) install.packages(p, repos='https://cloud.r-project.org')"
+
+      - name: Install any missing packages
+        run: |
+          Rscript -e "pkgs <- c('targets','yaml','arrow','quarto','testthat','ggplot2','lintr'); for (p in pkgs) if (!requireNamespace(p, quietly=TRUE)) install.packages(p, repos='https://cloud.r-project.org')"
+
+      - name: Lint
+        run: Rscript -e "if (requireNamespace('lintr', quietly=TRUE)) lintr::lint_dir('R') else message('lintr not installed, skipping')"
+        continue-on-error: true
+
+      - name: Test
+        run: Rscript run-tests.R
+
+      - name: Run pipeline and report
+        run: make report
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: pipeline-outputs
+          path: |
+            output/report.html
+            data/synthetic/visits.parquet
+
+  deploy-pages:
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: pipeline
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: pipeline-outputs
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload to GitHub Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: output
+
+      - name: Deploy to GitHub Pages
+        id: deploy
+        uses: actions/deploy-pages@v4

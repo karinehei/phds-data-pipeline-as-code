@@ -1,0 +1,91 @@
+# Data contract: synthetic pediatric visit dataset
+# Used for validation in R/validate_contract.R
+
+metadata:
+  version: "1.0"
+  owner: "phds-pipeline"
+  last_updated: "2025-02-16"
+  description: "Schema for pediatric visit records (synthetic demo data)"
+
+datasets:
+  pediatric_visits:
+    columns:
+      - name: patient_id
+        type: string
+        required: true
+        nullable: false
+        description: "Unique patient identifier"
+
+      - name: age_years
+        type: integer
+        required: true
+        nullable: false
+        min: 0
+        max: 18
+        description: "Patient age in whole years"
+
+      - name: sex
+        type: string
+        required: true
+        nullable: false
+        allowed_values: ["M", "F", "Other", "Unknown"]
+        description: "Biological sex / gender"
+
+      - name: visit_date
+        type: date
+        required: true
+        nullable: false
+        format: "YYYY-MM-DD"
+        description: "Date of visit"
+
+      - name: diagnosis_code
+        type: string
+        required: true
+        nullable: false
+        description: "Primary diagnosis (ICD-10/ICD-10-CM style)"
+
+      - name: site_id
+        type: string
+        required: true
+        nullable: false
+        description: "Facility or site identifier"
+
+      - name: weight_kg
+        type: numeric
+        required: false
+        nullable: true
+        min: 2.0
+        max: 200.0
+        description: "Weight in kilograms; missing allowed but flagged"
+
+    # Hard constraints (validation fails if violated)
+    hard_rules:
+      - patient_id: non_null
+      - age_years: "range 0-18"
+      - sex: "in [M, F, Other, Unknown]"
+      - visit_date: non_null
+      - diagnosis_code: non_null
+      - site_id: non_null
+
+    # Soft rules (warnings only; do not fail validation)
+    soft_rules:
+      - id: weight_missing
+        field: weight_kg
+        rule: "missing_allowed"
+        action: flag
+        message: "weight_kg is missing; consider imputation for analytics"
+
+      - id: diagnosis_pattern
+        field: diagnosis_code
+        rule: "icd10_pattern"
+        pattern: "^[A-Z][0-9]{2}(\\.[0-9]{1,4})?$"
+        action: flag
+        message: "diagnosis_code does not match ICD-10 style (e.g. A00.0, Z99.89)"
+
+      - id: weight_bounds
+        field: weight_kg
+        rule: "range_check"
+        min: 2.0
+        max: 200.0
+        action: flag
+        message: "weight_kg outside typical pediatric range (2–200 kg)"

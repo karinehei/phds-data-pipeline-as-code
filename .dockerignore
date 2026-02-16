@@ -1,0 +1,20 @@
+# Exclude from image for minimal size and reproducibility
+.git
+.github
+_targets
+output
+*.html
+.Rhistory
+.RData
+*.Rproj
+renv/library
+renv/local
+renv/staging
+__pycache__
+.venv
+venv
+*.md
+!README.md
+docs
+docker
+k8s

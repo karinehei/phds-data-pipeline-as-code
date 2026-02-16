@@ -1,0 +1,144 @@
+---
+title: "PHDS Data Pipeline Report"
+format:
+  html:
+    toc: true
+    toc-depth: 2
+execute:
+  echo: true
+  warning: false
+  error: true
+---
+
+## Overview
+
+This report summarizes the **pediatric visit dataset** produced by the phds-data-pipeline-as-code pipeline. The dataset is **synthetic**—generated with deterministic seeds for development, testing, and demos.
+
+**Privacy note:** No real patient or clinical data is used. All records are artificially generated and do not represent any individual.
+
+```{r setup, include=FALSE}
+# Load pipeline outputs (written by targets before render)
+# Robust for CI: no interactive prompts, graceful fallbacks
+metrics <- if (file.exists("output/metrics.rds")) readRDS("output/metrics.rds") else list()
+validation <- if (file.exists("output/validation.rds")) readRDS("output/validation.rds") else list(valid = NA, errors = character(0), warnings = character(0))
+df <- if (file.exists("data/synthetic/visits.parquet")) arrow::read_parquet("data/synthetic/visits.parquet") else NULL
+contract_raw <- if (file.exists("data_contract/contract.yaml") && requireNamespace("yaml", quietly = TRUE)) yaml::read_yaml("data_contract/contract.yaml") else list()
+```
+
+## Data Contract
+
+Key rules from `data_contract/contract.yaml`:
+
+```{r contract, results='asis'}
+if (length(contract_raw) > 0) {
+  meta <- contract_raw$metadata
+  ds <- contract_raw$datasets$pediatric_visits
+  v <- if (is.null(meta$version)) "—" else meta$version
+  o <- if (is.null(meta$owner)) "—" else meta$owner
+  u <- if (is.null(meta$last_updated)) "—" else meta$last_updated
+  cat("**Version:**", v, "| **Owner:**", o, "| **Updated:**", u, "\n\n")
+  cat("**Columns:**\n")
+  for (col in ds$columns) {
+    req <- if (isTRUE(col$required)) "required" else "optional"
+    desc <- if (is.null(col$description)) "" else col$description
+    cat("-", col$name, "(", col$type, ",", req, "):", desc, "\n")
+  }
+  hr <- if (is.null(ds$hard_rules)) "—" else {
+    paste(vapply(ds$hard_rules, function(r) paste(names(r), unlist(r), sep = ": ", collapse = " "), character(1)), collapse = "; ")
+  }
+  cat("\n**Hard rules:** ", hr, "\n\n")
+  sr <- ds$soft_rules
+  if (!is.null(sr) && length(sr) > 0) {
+    soft_txt <- vapply(sr, function(s) paste0(s$field, ": ", if (!is.null(s$message)) s$message else s$rule), character(1))
+    cat("**Soft rules:** ", paste(soft_txt, collapse = "; "), "\n")
+  }
+} else {
+  cat("Contract not available. Run pipeline first.\n")
+}
+```
+
+## Validation Summary
+
+```{r validation, results='asis'}
+if (!is.na(validation$valid)) {
+  status <- if (validation$valid) "PASS" else "FAIL"
+  cat("**Status:** ", status, "\n\n")
+  if (length(validation$errors) > 0) {
+    cat("**Errors:**\n")
+    for (e in validation$errors) cat("-", e, "\n")
+  }
+  if (length(validation$warnings) > 0) {
+    cat("\n**Warnings:**\n")
+    for (w in validation$warnings) cat("-", w, "\n")
+  }
+  if (validation$valid && length(validation$errors) == 0 && length(validation$warnings) == 0) {
+    cat("No issues.\n")
+  }
+} else {
+  cat("Validation not available. Run tar_make() first.\n")
+}
+```
+
+## Metrics
+
+### Counts by Site
+
+```{r counts-by-site}
+if (length(metrics) > 0 && !is.null(metrics$counts_by_site)) {
+  knitr::kable(metrics$counts_by_site)
+} else {
+  cat("No metrics. Run tar_make() first.\n")
+}
+```
+
+### Age Distribution Summary
+
+```{r age-summary}
+if (length(metrics) > 0 && !is.null(metrics$age_summary)) {
+  knitr::kable(metrics$age_summary)
+} else {
+  cat("No metrics. Run tar_make() first.\n")
+}
+```
+
+### Top Diagnoses
+
+```{r top-diagnoses}
+if (length(metrics) > 0 && !is.null(metrics$top_diagnoses)) {
+  knitr::kable(metrics$top_diagnoses)
+} else {
+  cat("No metrics. Run tar_make() first.\n")
+}
+```
+
+### Missingness Rates
+
+```{r missingness}
+if (length(metrics) > 0 && !is.null(metrics$missingness_rates)) {
+  knitr::kable(metrics$missingness_rates)
+} else {
+  cat("No metrics. Run tar_make() first.\n")
+}
+```
+
+## Visualizations
+
+```{r plots, fig.width=6, fig.height=4}
+fig_dir <- "output/figures"
+if (dir.exists(fig_dir)) {
+  for (f in list.files(fig_dir, pattern = "\\.png$", full.names = TRUE)) {
+    knitr::include_graphics(f)
+  }
+} else {
+  cat("No figures. Run tar_make() first.\n")
+}
+```
+
+## Reproducibility
+
+- **Seed:** 123 (used in `generate_synthetic_data`)
+- **Package versions:** See `renv.lock` or run `renv::snapshot()` for a full lockfile.
+
+```{r session}
+sessionInfo()
+```

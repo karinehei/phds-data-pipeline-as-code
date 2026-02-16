@@ -1,0 +1,44 @@
+# R
+.Rhistory
+.RData
+.Rproj.user
+*.Rproj
+
+# renv
+renv/library/
+renv/local/
+renv/staging/
+
+# Quarto
+.quarto/
+*.html
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Python (if used for tooling)
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+
+# Data (raw + synthetic generated)
+data/raw/*
+!data/raw/.gitkeep
+!data/raw/README.md
+data/synthetic/*
+!data/synthetic/.gitkeep
+!data/synthetic/README.md
+
+# Output (generated)
+output/*
+!output/.gitkeep
+!output/README.md
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo

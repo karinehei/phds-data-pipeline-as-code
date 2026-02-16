@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: phds-pipeline-config
+data:
+  SEED: "123"
+  N_PATIENTS: "200"
+  N_VISITS: "800"

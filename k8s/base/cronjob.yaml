@@ -1,0 +1,40 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: phds-pipeline
+spec:
+  schedule: "0 6 * * *"  # Daily at 06:00 UTC (override in overlays)
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      ttlSecondsAfterFinished: 86400  # Delete job 24h after completion
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: pipeline
+              image: phds-pipeline:latest
+              imagePullPolicy: IfNotPresent
+              command: ["make", "report"]
+              envFrom:
+                - configMapRef:
+                    name: phds-pipeline-config
+              resources:
+                requests:
+                  memory: "512Mi"
+                  cpu: "250m"
+                limits:
+                  memory: "2Gi"
+                  cpu: "1000m"
+              volumeMounts:
+                - name: output
+                  mountPath: /app/output
+                - name: data
+                  mountPath: /app/data/synthetic
+          volumes:
+            - name: output
+              emptyDir: {}
+            - name: data
+              emptyDir: {}
