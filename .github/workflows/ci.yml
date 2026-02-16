@@ -80,6 +80,9 @@ jobs:
         with:
           name: pipeline-outputs
 
+      - name: Prepare index.html for root URL
+        run: if [ -f output/report.html ]; then cp output/report.html output/index.html; fi
+
       - name: Setup Pages
         uses: actions/configure-pages@v4
         with:
