@@ -44,12 +44,18 @@ jobs:
       - name: Run pipeline and report
         run: make report
 
+      - name: Upload report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: phds-report
+          path: output/
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: pipeline-outputs
           path: |
-            output/report.html
+            output/
             data/synthetic/visits.parquet
 
   deploy-pages:

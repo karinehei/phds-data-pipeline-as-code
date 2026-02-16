@@ -2,7 +2,7 @@
 # Requires: R, Rscript, Quarto (for report)
 # Usage: make setup  make data  make test  make report  make clean
 
-.PHONY: setup data test report clean k8s-validate
+.PHONY: setup data test report site clean k8s-validate
 
 # Install R dependencies: renv restore if lock has packages, else install minimal set
 setup:
@@ -18,7 +18,14 @@ test:
 
 # Run targets pipeline (includes report render to output/report.html)
 report:
+	mkdir -p output
 	Rscript -e "targets::tar_make()"
+
+# Prepare _site/ for GitHub Pages (copy output/ and create index.html)
+site:
+	mkdir -p _site && \
+	if [ -d output ]; then cp -r output/. _site/; fi && \
+	if [ -f _site/report.html ]; then cp _site/report.html _site/index.html; fi
 
 # Remove output, generated data, and targets cache
 clean:

@@ -69,6 +69,7 @@ make clean    # Remove output/, data/synthetic/*, _targets/
 | `make data` | Generate synthetic pediatric visits to `data/synthetic/visits.parquet` |
 | `make test` | Run `Rscript run-tests.R` (testthat) |
 | `make report` | Run `targets::tar_make()` (pipeline + report) |
+| `make site` | Prepare `_site/` for Pages: copy `output/` and create `index.html` from `report.html` |
 | `make clean` | Remove `output/`, `_targets/`, generated data in `data/synthetic/`, stray `report.html` |
 | `make k8s-validate` | Run `kubectl kustomize` on base and dev overlay (requires kubectl) |
 
@@ -87,20 +88,29 @@ make clean    # Remove output/, data/synthetic/*, _targets/
 | `output/` | Pipeline outputs and reports |
 | `docker/` | Container image for pipeline execution |
 | `k8s/base/` | CronJob + ConfigMap + EmptyDir; `k8s/overlays/dev/` for environment-specific config |
-| `.github/workflows/ci.yml` | CI/CD pipeline |
+| `.github/workflows/ci.yml` | CI (lint, test, report, artifacts) |
+| `.github/workflows/pages.yml` | Pages (build report, deploy to GitHub Pages) |
 
 ---
 
 ## CI/CD
 
-- **On PR and push to `main`**: Checkout → setup R (r-lib/actions) → install deps (`renv::restore` if `renv.lock` exists, else install targets, yaml, arrow, quarto, testthat, ggplot2, lintr) → lint (optional, non-blocking) → tests → `make report` → upload artifacts (`output/report.html`, `data/synthetic/visits.parquet`).
+- **On PR and push to `main`**: Checkout → setup R (r-lib/actions) → install deps → lint (optional, non-blocking) → tests → `make report` → upload artifacts (`output/`, `data/synthetic/visits.parquet`).
 - **On push to `main` only**: Deploy report to GitHub Pages (enable Pages in repo Settings → Pages → Source: GitHub Actions).
+
+---
+
+## Publishing the report
+
+Enable **Settings → Pages → Source: GitHub Actions**. After pushing to `main`, the report is published at `https://<user>.github.io/<repo>/`.
+
+The report is also available as a CI artifact (`phds-report`) on every run (PR and push)—download it from the Actions run summary. The Pages workflow copies `report.html` to `index.html` automatically so the site root serves the report.
 
 ---
 
 ## GitOps Deployment
 
-The `k8s/` directory holds Kustomize manifests: a **base** (CronJob, PVCs) and **overlays** (e.g. `dev`) for schedule and image overrides. Argo CD or Flux watches this repo and applies `k8s/overlays/<env>` to the cluster. CronJob runs the pipeline on a schedule, writing outputs to EmptyDir (or PVC in production); no manual `kubectl apply` is required after Git changes.
+The `k8s/` directory holds Kustomize manifests: a **base** (CronJob, ConfigMap, EmptyDir) and **overlays** (e.g. `dev`) for schedule and image overrides. Argo CD or Flux watches this repo and applies `k8s/overlays/<env>` to the cluster. CronJob runs the pipeline on a schedule, writing outputs to EmptyDir (or PVC in production); no manual `kubectl apply` is required after Git changes.
 
 ---
 

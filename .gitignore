@@ -37,6 +37,7 @@ data/synthetic/*
 output/*
 !output/.gitkeep
 !output/README.md
+_site/
 
 # IDE
 .idea/
