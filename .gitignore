@@ -12,6 +12,7 @@ renv/staging/
 # Quarto
 .quarto/
 *.html
+*.deb
 
 # OS
 .DS_Store
