@@ -36,7 +36,10 @@ compute_metrics <- function(df) {
   top_diagnoses <- head(top_diagnoses, 10)
 
   # Missingness rates
-  cols_to_check <- c("patient_id", "age_years", "sex", "visit_date", "diagnosis_code", "site_id", "weight_kg")
+  cols_to_check <- c(
+    "patient_id", "age_years", "sex", "visit_date",
+    "diagnosis_code", "site_id", "weight_kg"
+  )
   cols_present <- intersect(cols_to_check, names(df))
   n_missing <- vapply(cols_present, function(c) sum(is.na(df[[c]])), integer(1))
   missingness_rates <- data.frame(

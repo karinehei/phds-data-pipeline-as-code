@@ -15,11 +15,15 @@ make_plots <- function(df) {
     ))
   }
   if (nrow(df) == 0) {
-    return(list(age_hist = NULL, top_diagnoses_bar = NULL, visits_per_week = NULL))
+    return(list(
+      age_hist = NULL,
+      top_diagnoses_bar = NULL,
+      visits_per_week = NULL
+    ))
   }
 
   # Histogram of age_years
-  age_hist <- ggplot2::ggplot(df, ggplot2::aes(x = age_years)) +
+  age_hist <- ggplot2::ggplot(df, ggplot2::aes(x = .data$age_years)) +
     ggplot2::geom_histogram(binwidth = 1, fill = "steelblue", color = "white") +
     ggplot2::labs(title = "Age distribution", x = "Age (years)", y = "Count") +
     ggplot2::theme_minimal()
@@ -28,10 +32,16 @@ make_plots <- function(df) {
   dx_tab <- sort(table(df$diagnosis_code), decreasing = TRUE)
   k <- min(10, length(dx_tab))
   dx_df <- data.frame(
-    diagnosis_code = factor(names(dx_tab)[seq_len(k)], levels = rev(names(dx_tab)[seq_len(k)])),
+    diagnosis_code = factor(
+      names(dx_tab)[seq_len(k)],
+      levels = rev(names(dx_tab)[seq_len(k)])
+    ),
     n = as.vector(dx_tab)[seq_len(k)]
   )
-  top_diagnoses_bar <- ggplot2::ggplot(dx_df, ggplot2::aes(x = diagnosis_code, y = n, fill = diagnosis_code)) +
+  top_diagnoses_bar <- ggplot2::ggplot(
+    dx_df,
+    ggplot2::aes(x = .data$diagnosis_code, y = .data$n, fill = .data$diagnosis_code)
+  ) +
     ggplot2::geom_col(show.legend = FALSE) +
     ggplot2::coord_flip() +
     ggplot2::labs(title = "Top diagnosis codes", x = "Diagnosis code", y = "Count") +

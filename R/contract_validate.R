@@ -208,14 +208,14 @@ validate_against_contract <- function(df,
   }
   if (!is.data.frame(df)) {
     return(list(valid = FALSE, errors = "Input must be a data frame",
-                warnings = character(0)))
+                 warnings = character(0)))
   }
 
   schema <- get_dataset_schema(contract, dataset_name)
   cols <- schema$columns
   if (is.null(cols) || length(cols) == 0L) {
     return(list(valid = FALSE, errors = "No columns defined in contract",
-                warnings = character(0)))
+                 warnings = character(0)))
   }
 
   errors <- character(0)
@@ -246,7 +246,7 @@ validate_against_contract <- function(df,
       if (!nn$ok) errors <- c(errors, nn$errors)
     }
 
-    # Range (min/max)
+    # Range: min and max
     if (!is.null(col_spec$min) || !is.null(col_spec$max)) {
       rc <- check_range(df, name, col_spec$min, col_spec$max)
       if (!rc$ok) errors <- c(errors, rc$errors)
@@ -280,8 +280,8 @@ validate_against_contract <- function(df,
 #' @return Invisibly, the validation result list.
 #' @export
 validate_contract <- function(data,
-                             contract_path = "data_contract/contract.yaml",
-                             stop_on_error = TRUE) {
+                              contract_path = "data_contract/contract.yaml",
+                              stop_on_error = TRUE) {
   res <- validate_against_contract(data, read_contract(contract_path))
   if (stop_on_error && !res$valid) {
     stop("Contract validation failed: ", paste(res$errors, collapse = "; "))
