@@ -17,7 +17,8 @@ read_contract <- function(path = "data_contract/contract.yaml") {
 #' Get column schema for a dataset from contract
 #'
 #' @param contract List. Parsed contract from \code{read_contract()}.
-#' @param dataset_name Character. Name of dataset (e.g. \code{"pediatric_visits"}).
+#' @param dataset_name Character. Name of dataset
+#'   (e.g. \code{"pediatric_visits"}).
 #' @return List of column specs.
 #' @keywords internal
 get_dataset_schema <- function(contract, dataset_name = NULL) {
@@ -70,7 +71,8 @@ check_non_null <- function(df, col_name) {
 #'
 #' @param df Data frame.
 #' @param col_name Character. Column name.
-#' @param type_spec Character. Contract type: \code{string}, \code{integer}, \code{numeric}, \code{date}.
+#' @param type_spec Character. Contract type:
+#'   \code{string}, \code{integer}, \code{numeric}, \code{date}.
 #' @return List with \code{ok} (logical) and \code{errors} (character).
 #' @keywords internal
 check_column_type <- function(df, col_name, type_spec) {
@@ -79,14 +81,16 @@ check_column_type <- function(df, col_name, type_spec) {
   type_spec <- tolower(type_spec)
   ok <- switch(type_spec,
     string = is.character(x),
-    integer = is.integer(x) || (is.numeric(x) && all(x[!is.na(x)] == as.integer(x[!is.na(x)]))),
+    integer = is.integer(x) ||
+      (is.numeric(x) && all(x[!is.na(x)] == as.integer(x[!is.na(x)]))),
     numeric = is.numeric(x),
     date = inherits(x, "Date"),
     FALSE
   )
   if (is.null(ok)) ok <- FALSE
   errors <- if (!ok) {
-    paste0(col_name, ": expected type '", type_spec, "', got '", class(x)[[1L]], "'")
+    paste0(col_name, ": expected type '", type_spec, "', got '",
+           class(x)[[1L]], "'")
   } else {
     character(0)
   }
@@ -112,7 +116,8 @@ check_range <- function(df, col_name, min_val = NULL, max_val = NULL) {
   n_bad <- sum(out_of_range)
   ok <- n_bad == 0L
   errors <- if (!ok) {
-    paste0(col_name, ": ", n_bad, " value(s) outside range [", min_val, ", ", max_val, "]")
+    paste0(col_name, ": ", n_bad, " value(s) outside range [",
+           min_val, ", ", max_val, "]")
   } else {
     character(0)
   }
@@ -138,7 +143,8 @@ check_enum <- function(df, col_name, allowed) {
   ok <- n_bad == 0L
   errors <- if (!ok) {
     bad_vals <- unique(x[invalid])
-    paste0(col_name, ": ", n_bad, " invalid value(s), e.g. ", paste(head(bad_vals, 3), collapse = ", "))
+    paste0(col_name, ": ", n_bad, " invalid value(s), e.g. ",
+           paste(head(bad_vals, 3), collapse = ", "))
   } else {
     character(0)
   }
@@ -149,17 +155,21 @@ check_enum <- function(df, col_name, allowed) {
 #'
 #' @param df Data frame.
 #' @param col_name Character. Column name.
-#' @param threshold Numeric. Max allowed missing rate (0-1). If exceeded, add warning.
+#' @param threshold Numeric. Max allowed missing rate (0-1).
+#'   If exceeded, add warning.
 #' @return List with \code{ok} (logical) and \code{warnings} (character).
 #' @keywords internal
 check_missing_rate <- function(df, col_name, threshold = 0.2) {
-  if (!col_name %in% names(df)) return(list(ok = TRUE, warnings = character(0)))
+  if (!col_name %in% names(df)) {
+    return(list(ok = TRUE, warnings = character(0)))
+  }
   n <- nrow(df)
   n_na <- sum(is.na(df[[col_name]]))
   rate <- n_na / n
   ok <- rate <= threshold
   warnings <- if (!ok && n > 0L) {
-    paste0(col_name, ": missing rate ", round(rate * 100, 1), "% exceeds threshold ", threshold * 100, "%")
+    paste0(col_name, ": missing rate ", round(rate * 100, 1),
+           "% exceeds threshold ", threshold * 100, "%")
   } else {
     character(0)
   }
@@ -172,17 +182,22 @@ check_missing_rate <- function(df, col_name, threshold = 0.2) {
 #' pipeline; warnings do not.
 #'
 #' @param df Data frame to validate.
-#' @param contract List. Parsed contract from \code{read_contract()}, or path to YAML.
-#' @param dataset_name Character. Dataset name in contract (default: first dataset).
-#' @param weight_missing_threshold Numeric. Max allowed missing rate for weight_kg (0-1).
-#' @return List with \code{valid} (logical), \code{errors} (character), \code{warnings} (character).
+#' @param contract List. Parsed contract from \code{read_contract()},
+#'   or path to YAML.
+#' @param dataset_name Character. Dataset name in contract
+#'   (default: first dataset).
+#' @param weight_missing_threshold Numeric. Max allowed missing rate
+#'   for weight_kg (0-1).
+#' @return List with \code{valid} (logical), \code{errors} (character),
+#'   \code{warnings} (character).
 #'
 #' @export
 #'
 #' @examples
 #' contract <- read_contract("data_contract/contract.yaml")
-#' df <- data.frame(patient_id = "P1", age_years = 5L, sex = "M", visit_date = Sys.Date(),
-#'   diagnosis_code = "J06.9", site_id = "SITE_A", weight_kg = 20)
+#' df <- data.frame(patient_id = "P1", age_years = 5L, sex = "M",
+#'   visit_date = Sys.Date(), diagnosis_code = "J06.9",
+#'   site_id = "SITE_A", weight_kg = 20)
 #' validate_against_contract(df, contract)
 validate_against_contract <- function(df,
                                      contract,
@@ -192,13 +207,15 @@ validate_against_contract <- function(df,
     contract <- read_contract(contract)
   }
   if (!is.data.frame(df)) {
-    return(list(valid = FALSE, errors = "Input must be a data frame", warnings = character(0)))
+    return(list(valid = FALSE, errors = "Input must be a data frame",
+                warnings = character(0)))
   }
 
   schema <- get_dataset_schema(contract, dataset_name)
   cols <- schema$columns
   if (is.null(cols) || length(cols) == 0L) {
-    return(list(valid = FALSE, errors = "No columns defined in contract", warnings = character(0)))
+    return(list(valid = FALSE, errors = "No columns defined in contract",
+                warnings = character(0)))
   }
 
   errors <- character(0)
@@ -279,7 +296,8 @@ validate_contract <- function(data,
 #' @return Invisibly \code{x}.
 #' @export
 print_validation_summary <- function(x, ...) {
-  stopifnot(is.list(x), "valid" %in% names(x), "errors" %in% names(x), "warnings" %in% names(x))
+  stopifnot(is.list(x), "valid" %in% names(x), "errors" %in% names(x),
+            "warnings" %in% names(x))
   status <- if (x$valid) "PASS" else "FAIL"
   cat("Validation: ", status, "\n", sep = "", ...)
   if (length(x$errors) > 0L) {
