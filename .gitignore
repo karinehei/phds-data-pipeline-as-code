@@ -38,6 +38,7 @@ output/*
 !output/.gitkeep
 !output/README.md
 _site/
+_targets_worklife/
 
 # IDE
 .idea/

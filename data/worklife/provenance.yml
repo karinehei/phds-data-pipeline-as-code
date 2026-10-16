@@ -1,0 +1,18 @@
+retrieved_at: '2026-10-16T13:25:03Z'
+url: https://www.tyoelamatieto.fi/tellu-data/data/occupational-diseases/occupational-diseases-data-20052026.zip
+bytes: 292234.0
+sha256: ad2261e1bcc95b68d852e96e7718b740ee5bbcb3a15c70d6e6d5fd80ece5713f
+licence: CC BY 4.0
+licence_url: https://creativecommons.org/licenses/by/4.0/legalcode
+publisher: Työterveyslaitos
+service: Työelämätieto
+dataset: Työikäisten vahvistetut ammattitaudit
+handover_date: '2026-05-20'
+period: 2019-2023
+dataset_page: https://www.tyoelamatieto.fi/fi/etusivu/aineistot/tyoikaisten-vahvistetut-ammattitaudit/
+attribution: 'Työterveyslaitos, Työelämätieto: Työikäisten vahvistetut ammattitaudit,
+  aineisto luovutettu 20.5.2026, tiedosto occupational-diseases-data-20052026.zip
+  (CC BY 4.0). Työllisten lukumäärät paketissa: Tilastokeskus, työssäkäyntitilasto,
+  taulukko 115s, paketin README:n mukaan haettu 27.4.2026 (CC BY 4.0).'
+statfin_table: 115s
+statfin_readme_retrieved: '2026-04-27'

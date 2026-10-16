@@ -1,0 +1,35 @@
+retrieved_at: '2026-10-16T13:27:17Z'
+statfin_api: https://pxdata.stat.fi/PxWeb/api/v1/fi/StatFin/tyokay/115s.px
+statfin_docs: https://stat.fi/fi/dokumentaatio/tilastojen-dokumentaatio/tyokay
+table_title: Työlliset muuttujina Ammattiryhmä, Asuinpaikan alue, Vuosi, Sukupuoli
+  ja Tiedot
+occupation_variable: ammatti_104_20161021
+area_variable: alue_23_20260101
+year_variable: timeperiod_y
+sex_variable: sukupuoli_9_20180101
+whole_country_code: SSS
+both_sexes_code: SSS
+all_occupations_code: SSSSS
+aland_code: MK21
+aland_label: MK21 Ahvenanmaa
+aland_mean_employment: 14242.2
+geography_sums_match: yes
+verification_complete: yes
+n_match: 43
+n_unexplained_difference: 0
+n_not_in_statfin: 0
+n_incomplete: 0
+age_note: Taulukossa 115s ei ole ikämuuttujaa. Tapausotteen kuvaus rajaa tapaukset
+  15–64-vuotiaisiin. Haettu dokumentaatio määrittelee työlliset 18–74-vuotiaiksi.
+  Ikärajat eivät siis ole samat.
+geography_note: Taulukon aluemääre sisältää arvon SSS (koko maa) ja alueen MK21 (MK21
+  Ahvenanmaa). Vuosina 2019–2023 alueiden summa vastaa koko maan lukua, joten koko
+  maan nimittäjä sisältää Ahvenanmaan. Ahvenanmaan työllisten keskiarvo on 14242.
+  Tapausote ei sisällä Ahvenanmaata.
+reference_note: Dokumentaation mukaan väestö kuvataan vuoden viimeisen päivän tilannetta
+  ja toiminta vuoden viimeistä viikkoa.
+classification_note: Ammattimuuttuja on Ammattiryhmä (ammatti_104_20161021). Dokumentaatio
+  sanoo, että ammateissa käytetään kulloinkin voimassa olevaa Tilastokeskuksen ammattiluokitusta.
+  Paketin README nimeää luokituksen AML 2010.
+docs_note: Työssäkäyntitilaston dokumentaatio haettiin osoitteesta stat.fi.
+packaged_denominator_replaced: no

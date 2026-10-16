@@ -1,0 +1,46 @@
+# Schema for the 2019-2023 occupational-disease extract used in this analysis.
+# File A and the occupation denominator are separate inputs. They are not joined
+# to files B or C.
+
+metadata:
+  version: "1.0"
+  owner: phds-pipeline
+  dataset: Työikäisten vahvistetut ammattitaudit
+  period: "2019-2023"
+  description: >
+    Retained confirmed occupational-disease cases (file A) and the packaged
+    employment denominator. Occupation codes are characters, including leading
+    zeros and XX/ZZ.
+
+datasets:
+  occupational_disease_cases:
+    columns:
+      - name: DIAGNOOSI
+        type: string
+        required: true
+        nullable: false
+        description: Occupational disease label from the Register classification
+      - name: ALTISTERYHMA
+        type: string
+        required: true
+        nullable: false
+        description: Exposure-group code 1-10
+      - name: AMMATTI
+        type: string
+        required: true
+        nullable: false
+        description: Two-digit AML 2010 code, or XX/ZZ
+
+  occupation_denominator:
+    columns:
+      - name: occupation
+        type: string
+        required: true
+        nullable: false
+        description: Occupation code; must be unique
+      - name: employment
+        type: numeric
+        required: true
+        nullable: false
+        min: 0
+        description: Packaged employed-person denominator (non-negative)
