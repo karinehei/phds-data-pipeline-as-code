@@ -43,11 +43,17 @@ jobs:
         run: Rscript -e "if (requireNamespace('lintr', quietly=TRUE)) lintr::lint_dir('R') else message('lintr not installed, skipping')"
         continue-on-error: true
 
+      - name: Acquire the verified worklife snapshot
+        run: make worklife-acquire
+
       - name: Test
         run: Rscript run-tests.R
 
-      - name: Run pipeline and report
+      - name: Build the pediatric report
         run: make report
+
+      - name: Build the worklife report from the saved audit
+        run: make worklife
 
       - name: Upload report artifact
         uses: actions/upload-artifact@v4
@@ -82,8 +88,8 @@ jobs:
         with:
           name: pipeline-outputs
 
-      - name: Prepare index.html for root URL
-        run: if [ -f output/report.html ]; then cp output/report.html output/index.html; fi
+      - name: Prepare the shared front page
+        run: cp site/index.html output/index.html
 
       - name: Setup Pages
         uses: actions/configure-pages@v4

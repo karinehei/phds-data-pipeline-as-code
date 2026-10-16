@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Työnäytteet</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #1c2834;
+      --muted: #4d5c6b;
+      --line: #d5dee6;
+      --paper: #f6f8fa;
+      --card: #ffffff;
+      --primary: #0f4c5c;
+      --primary-deep: #0b3944;
+      --accent: #c47b2b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Calibri, "Helvetica Neue", Arial, sans-serif;
+      color: var(--ink);
+      background: var(--paper);
+      line-height: 1.5;
+    }
+    main {
+      max-width: 44rem;
+      margin: 0 auto;
+      padding: 3rem 1.25rem 4rem;
+    }
+    h1 {
+      margin: 0 0 0.5rem;
+      font-size: 1.8rem;
+      font-weight: 650;
+      letter-spacing: -0.02em;
+    }
+    .lead {
+      margin: 0 0 2rem;
+      color: var(--muted);
+      max-width: 38rem;
+    }
+    a.card {
+      display: block;
+      margin: 0 0 1rem;
+      padding: 1.25rem 1.35rem 1.15rem;
+      text-decoration: none;
+      color: inherit;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+    }
+    a.card:hover,
+    a.card:focus {
+      border-color: var(--primary);
+      outline: none;
+    }
+    a.primary {
+      background: var(--primary);
+      border-color: var(--primary-deep);
+      color: #f4fafb;
+    }
+    a.primary .kicker,
+    a.primary p { color: #d5e8ec; }
+    .kicker {
+      margin: 0 0 0.35rem;
+      font-size: 0.78rem;
+      font-weight: 650;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+    h2 {
+      margin: 0 0 0.4rem;
+      font-size: 1.25rem;
+      line-height: 1.3;
+    }
+    p { margin: 0; }
+    .card p { color: var(--muted); }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Työnäytteet</h1>
+    <p class="lead">Kaksi erillistä raporttia: avoimen ammattitautiaineiston tarkastelu ja synteettisen aineiston validointiesimerkki.</p>
+    <a class="card primary" href="worklife/report.html">
+      <p class="kicker">Avoin aineisto</p>
+      <h2>Ammattitaudit Suomessa 2019–2023 — avoimen aineiston analyysi</h2>
+      <p>Työterveyslaitoksen Työelämätieto-aineiston kuvaileva tarkastelu. Julkaistujen tapausten määrä suhteessa paketin työllisyysnimittäjään.</p>
+    </a>
+    <a class="card" href="report.html">
+      <p class="kicker">Synteettinen aineisto</p>
+      <h2>Synteettinen potilasaineisto — datan validoinnin demonstraatio</h2>
+      <p>Lasten vastaanottokäyntien putki, tietosopimus ja kuviot. Aineisto on keinotekoinen, eikä sivulla ole oikeita potilastietoja.</p>
+    </a>
+  </main>
+</body>
+</html>

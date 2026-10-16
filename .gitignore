@@ -12,6 +12,7 @@ renv/staging/
 # Quarto
 .quarto/
 *.html
+!site/index.html
 *.deb
 
 # OS
