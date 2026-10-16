@@ -34,23 +34,37 @@ Rscript scripts/build_worklife.R
 
 The integrity script reported `integrity ok`. `run-tests.R` passed the pediatric and worklife tests. `scripts/build_worklife.R` rendered `output/worklife/report.html` from the local snapshot and the saved audit. It did not download the zip or query StatFin.
 
-WSL Ubuntu 24.04 has GNU Make 4.3, Quarto, and R 4.3.3. Docker Desktop was installed but the engine was not running. An isolated R 4.6.1 build was downloaded from `https://cdn.posit.co/r/ubuntu-2404/pkgs/r-4.6.1_1_amd64.deb` and extracted under `/tmp`. Its `R` binary runs only when `R_HOME` and `LD_LIBRARY_PATH` point at the extracted tree, because the package is built for `/opt/R/4.6.1`. Passwordless sudo is not available, and a user-namespace bind mount did not stay in place long enough to finish `renv::restore()` on R 4.6.1. A restore started on the system R 4.3.3 was stopped because that is not the locked version. `/tmp` on that WSL session no longer contains the extracted tree.
+Linux check, 16 October 2026, WSL Ubuntu 24.04, GNU Make 4.3, Quarto already installed. The distro's system R is 4.3.3, so it was not used. Passwordless sudo is not available, and `/opt` is not writable. R 4.6.1 (2026-06-24) was taken from `https://cdn.posit.co/r/ubuntu-2404/pkgs/r-4.6.1_1_amd64.deb` and extracted under the home directory. The development libraries that `apt` would install (`libcurl4-openssl-dev`, `libssl-dev`, `zlib1g-dev`, `libglpk-dev`, `libglpk40`, `libuv1-dev`, `libcolamd3`, `libamd3`, `libsuitesparseconfig7`) were downloaded with `apt-get download`, extracted into that same home directory, and exposed with `PKG_CONFIG_PATH`, `LIBRARY_PATH`, and `LD_LIBRARY_PATH`. `libxml2-dev` returned 404 from the stale package index. Pandoc came from the existing Quarto installation.
+
+A clean copy of the working tree, including the gitignored snapshot zip and the saved audit, was placed in that home directory. `.git`, `renv/library`, both targets stores, and `output/` were left out. In that copy:
+
+```text
+Rscript -e 'renv::consent(provided=TRUE); renv::restore(prompt=FALSE)'
+make test
+make data
+make report
+make worklife
+```
+
+`renv::status()` then reported no issues and `synchronized = TRUE`. `make test` exited 0. `make data` wrote the synthetic parquet file. `make report` rendered the pediatric report. `make worklife` rendered the worklife report from the local snapshot. The zip digest stayed `ad2261e1bcc95b68d852e96e7718b740ee5bbcb3a15c70d6e6d5fd80ece5713f`. `data/worklife/provenance.yml` and `data/worklife/audit/audit.yml` were unchanged, so the rebuild did not refresh remote data. This run is not a GitHub Actions run.
 
 ## Clean restore
 
-Not completed on R 4.6.1. The Windows library was created by `renv::install()` and `renv::snapshot()`, not by a clean `renv::restore()`. The GitHub Actions `renv::restore()` on ubuntu-latest with R 4.6.1 failed on `libglpk.so.40` before tests or either report.
+Completed on the prepared WSL R 4.6.1 library described above. `renv::restore()` installed the 80 locked packages, including `arrow` 25.0.1 built from the package's bundled C++ sources in about 8 minutes, `igraph` 2.3.4 linked with `-lglpk`, `curl` 8.0.0, `fs` 2.1.0, and `targets` 1.12.0. Loading `testthat`, `targets`, `ggplot2`, `arrow`, and `igraph` succeeded. Earlier attempts in the same session failed while those shared libraries were incomplete: `curl` could not find `libcurl`, `fs` linked a non-PIC `libuv.a`, and `igraph` loaded only after `libcolamd.so.3`, `libamd.so.3`, and `libsuitesparseconfig.so.7` were present. `libglpk40` itself depends on `libamd3` and `libcolamd3`; `apt install libglpk-dev` pulls that chain, including SuiteSparse config. The Windows library was still created earlier by `renv::install()` and `renv::snapshot()`, not by this Linux restore.
+
+The earlier GitHub Actions `renv::restore()` on ubuntu-latest with R 4.6.1 failed while loading `igraph` because `libglpk.so.40` was missing. The workflow now installs `libglpk-dev` before restore. Actions was not run again after that change.
 
 ## Original example
 
-`Rscript run-tests.R` in this review included the pediatric tests and passed. The pediatric report at `output/report.html` was produced earlier by `Rscript -e "targets::tar_make()"` on Windows R 4.6.1. This review did not run that pipeline again, so the restored metadata file would not match a newly written targets store. `make data`, `make test`, and `make report` were not executed with GNU Make on Linux.
+On the Linux copy, `make test` included the pediatric tests and passed, `make data` regenerated the synthetic visits file, and `make report` wrote `output/report.html` (45,830 bytes). The pediatric commands in the Makefile are unchanged. The Windows `output/report.html` from the earlier pediatric pipeline was not replaced by this Linux run. The working tree still has `_targets/meta/meta` restored to the pre-feature version from `a0876a9`; that file is not what the Linux copy used, because the copy excluded `_targets`.
 
 ## Numerical and visual checks
 
-The integrity script and the passing testthat file cover repeated rows, COVID reconciliation, leading zeros, join multiplication, missing and zero denominators, absent occupations, hand-calculated ratios, and tied ranks. The rebuilt ratio figure states the 15–64 / without-Åland versus 18–74 / whole-country difference in the image itself. The HTML summary states the same saved-audit arithmetic, definitions, and population limit. Long rank labels remain abbreviated; the table has the full names.
+The integrity script and the passing testthat file cover repeated rows, COVID reconciliation, leading zeros, join multiplication, missing and zero denominators, absent occupations, hand-calculated ratios, and tied ranks. The Linux-built HTML contains the ratio wording, the 15–64 and 18–74 limits, Åland, and the displayed ratio 13,4. The Windows report rebuilt earlier in this review states the same saved-audit arithmetic, definitions, and population limit in the summary, methods, figure captions, and interpretation. Long rank labels remain abbreviated; the table has the full names.
 
 ## Remaining limitations and unverified checks
 
-- GitHub Actions has not passed. The `libglpk-dev` change is local until the workflow is run again.
-- `renv::restore()` on Linux R 4.6.1 was not completed, and GNU Make was not used to build either report.
+- GitHub Actions has not been run again. The `libglpk-dev` change is local until that workflow runs. The WSL restore is not that run.
+- The WSL machine cannot `apt install` without a password, so the successful restore used extracted library packages and an extracted R 4.6.1 rather than the system paths under `/usr` and `/opt`.
 - The ratio remains a five-year descriptive comparison against a rounded employment stock with a different age range and with Åland in the denominator only.
 - Disclosure control can change the released ranking. No sampling interval was estimated.
