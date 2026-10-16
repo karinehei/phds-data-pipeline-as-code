@@ -2,7 +2,7 @@
 # Requires: R, Rscript, Quarto (for report)
 # Usage: make setup  make data  make test  make report  make clean
 
-.PHONY: setup data test report site clean k8s-validate
+.PHONY: setup data test report site clean k8s-validate worklife-acquire worklife-audit worklife worklife-clean
 
 # Install R dependencies: renv restore if lock has packages, else install minimal set
 setup:
@@ -34,3 +34,20 @@ clean:
 # Validate kustomize builds (requires kubectl)
 k8s-validate:
 	kubectl kustomize k8s/base && kubectl kustomize k8s/overlays/dev
+
+# Download the pinned occupational-disease snapshot and verify it before keeping it
+worklife-acquire:
+	Rscript scripts/acquire_worklife.R
+
+# Live StatFin 115s comparison. Not part of the offline report build.
+worklife-audit:
+	Rscript scripts/audit_worklife_denominator.R
+
+# Offline worklife report from the verified snapshot and saved audit
+worklife:
+	mkdir -p output/worklife
+	Rscript scripts/build_worklife.R
+
+# Remove worklife targets cache and report only
+worklife-clean:
+	Rscript -e "unlink('_targets_worklife', recursive=TRUE); unlink('output/worklife', recursive=TRUE)"

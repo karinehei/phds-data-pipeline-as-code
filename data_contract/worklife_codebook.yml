@@ -1,0 +1,14 @@
+source_zip: https://www.tyoelamatieto.fi/tellu-data/data/occupational-diseases/occupational-diseases-data-20052026.zip
+source_zip_sha256: ad2261e1bcc95b68d852e96e7718b740ee5bbcb3a15c70d6e6d5fd80ece5713f
+source_zip_bytes: 292234.0
+source_member: variables.xlsx
+source_member_sha256: 6093045c670c2d10823644c786ec07c66c85c072b5e369fe4ade91b0195cd39a
+extracted_by: scripts/extract_worklife_codebook.R
+n_rows: 141
+domains:
+- diagnosis
+- exposure
+- industry
+- occupation
+- region
+- sex

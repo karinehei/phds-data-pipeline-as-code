@@ -72,6 +72,20 @@ make clean    # Remove output/, data/synthetic/*, _targets/
 | `make site` | Prepare `_site/` for Pages: copy `output/` and create `index.html` from `report.html` |
 | `make clean` | Remove `output/`, `_targets/`, generated data in `data/synthetic/`, stray `report.html` |
 | `make k8s-validate` | Run `kubectl kustomize` on base and dev overlay (requires kubectl) |
+| `make worklife-acquire` | Download the pinned occupational-disease snapshot and keep it only if the size and SHA-256 match |
+| `make worklife-audit` | Compare the packaged employment denominator with Statistics Finland table 115s |
+| `make worklife` | Build the offline worklife report from the verified snapshot and saved audit |
+| `make worklife-clean` | Remove `_targets_worklife/` and `output/worklife/` |
+
+The same worklife steps without GNU make:
+
+```bash
+Rscript scripts/acquire_worklife.R
+Rscript scripts/extract_worklife_codebook.R
+Rscript scripts/audit_worklife_denominator.R
+Rscript scripts/build_worklife.R
+Rscript run-tests.R
+```
 
 ---
 
@@ -113,9 +127,23 @@ The `k8s/` directory holds Kustomize manifests: a **base** (CronJob, ConfigMap, 
 
 ---
 
+## Working-life analysis
+
+The pediatric example above is unchanged. A second, separate pipeline describes confirmed occupational diseases in Finland.
+
+**Question.** In the released 2019–2023 extract, which two-digit occupations have the most retained confirmed cases, which have the highest employment-normalised five-year values, and how do those rankings change when COVID-19 is separated?
+
+**Source.** Työterveyslaitos / Työelämätieto, dataset *Työikäisten vahvistetut ammattitaudit*, handed over 20 May 2026, licence CC BY 4.0. The pinned file is `occupational-diseases-data-20052026.zip` (292,234 bytes). Employment denominators inside the package come from Statistics Finland table 115s (CC BY 4.0).
+
+**Report.** `output/worklife/report.html` after `make worklife`. It is not part of the GitHub Pages artifact, which remains the pediatric `output/report.html`.
+
+**Limits.** Each row in file A is one retained case, not one person. Small cells were removed, Åland is absent from the case extract, and only the most severe recorded disease is kept. The ratio `1000 * cases / packaged employment` is a five-year descriptive ratio. It is not an annual incidence, an individual probability, or a causal risk. The packaged denominator is a rounded employment stock (ages 18–74 in the employment statistics, whole country), while the cases are described as ages 15–64 and exclude Åland. Sampling intervals are not estimated. Files B and C are not joined to file A.
+
+The plan and the checks behind the pin are in `docs/worklife-analysis-plan.md`.
+
 ## No Real Patient Data
 
-**This repository contains no real patient or clinical data.** All development and testing use **synthetic data** generated in `R/synthetic_data.R` with fixed seeds (`set.seed()`) for reproducibility. Synthetic datasets mimic schema and distributions for pipeline validation only.
+**This repository contains no real patient or clinical data.** The pediatric example uses **synthetic data** generated in `R/synthetic_data.R` with fixed seeds (`set.seed()`). The working-life analysis uses a public occupational-disease extract that is downloaded, checksum-verified, and kept out of git. Synthetic pediatric data mimic schema and distributions for pipeline validation only.
 
 ---
 

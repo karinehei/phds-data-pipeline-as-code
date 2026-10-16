@@ -1,0 +1,33 @@
+# Pinned Työelämätieto snapshot. Acquisition must not rewrite these fields.
+url: https://www.tyoelamatieto.fi/tellu-data/data/occupational-diseases/occupational-diseases-data-20052026.zip
+expected_bytes: 292234
+sha256: ad2261e1bcc95b68d852e96e7718b740ee5bbcb3a15c70d6e6d5fd80ece5713f
+publisher: Työterveyslaitos
+service: Työelämätieto
+dataset: Työikäisten vahvistetut ammattitaudit
+handover_date: "2026-05-20"
+licence: CC BY 4.0
+licence_url: https://creativecommons.org/licenses/by/4.0/legalcode
+dataset_page: https://www.tyoelamatieto.fi/fi/etusivu/aineistot/tyoikaisten-vahvistetut-ammattitaudit/
+fragment_metadata: https://www.tyoelamatieto.fi/tellu-content/fragments/fragmentTPSR/metadata.json
+open_data_policy: https://www.ttl.fi/tutkimus/avoin-data
+period: "2019-2023"
+case_member: data_2019_2023/data_A_2019_2023.tsv
+denominator_member: data_2019_2023/workersPerOccupation_2019_2023.dsv
+codebook_member: variables.xlsx
+covid_label: COVID-19-infektio
+expected_case_rows: 6096
+expected_covid_rows: 2940
+case_population: "Dataset page: confirmed occupational diseases among people aged 15-64. Åland removed. Samples under five removed. If several diseases were recorded, the most severe was kept."
+statfin_table: "115s"
+statfin_api: https://pxdata.stat.fi/PxWeb/api/v1/fi/StatFin/tyokay/115s.px
+statfin_docs: https://stat.fi/fi/dokumentaatio/tilastojen-dokumentaatio/tyokay
+statfin_readme_retrieved: "2026-04-27"
+archive_members:
+  - data_2019_2023/data_A_2019_2023.tsv
+  - data_2019_2023/workersPerOccupation_2019_2023.dsv
+  - variables.xlsx
+  - LICENSE.txt
+  - README - FI.txt
+  - README - EN.txt
+attribution: "Työterveyslaitos, Työelämätieto: Työikäisten vahvistetut ammattitaudit, aineisto luovutettu 20.5.2026, tiedosto occupational-diseases-data-20052026.zip (CC BY 4.0). Työllisten lukumäärät paketissa: Tilastokeskus, työssäkäyntitilasto, taulukko 115s, paketin README:n mukaan haettu 27.4.2026 (CC BY 4.0)."

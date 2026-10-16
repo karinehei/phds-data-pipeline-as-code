@@ -1,0 +1,176 @@
+---
+title: "Vahvistetut ammattitaudit ammattiluokittain 2019–2023"
+subtitle: "Työelämätieto-aineiston kuvaileva tarkastelu"
+lang: fi
+format:
+  html:
+    toc: true
+    toc-depth: 2
+    embed-resources: true
+    theme: cosmo
+    fig-align: center
+    css: report_worklife.css
+execute:
+  echo: false
+  warning: false
+  error: false
+---
+
+```{r setup}
+for (f in list.files("R", pattern = "^worklife_.*\\.R$", full.names = TRUE)) {
+  source(f)
+}
+results_path <- "output/worklife/results.rds"
+exposure_path <- "output/worklife/exposure.rds"
+provenance_path <- "data/worklife/provenance.yml"
+audit_path <- "data/worklife/audit/audit.yml"
+comparison_path <- "data/worklife/audit/comparison.csv"
+needed <- c(results_path, exposure_path, provenance_path, audit_path, comparison_path)
+missing <- needed[!file.exists(needed)]
+if (length(missing) > 0L) {
+  stop("Raportin syötteet puuttuvat: ", paste(missing, collapse = ", "))
+}
+results <- readRDS(results_path)
+exposure <- readRDS(exposure_path)
+provenance <- yaml::read_yaml(provenance_path)
+audit <- yaml::read_yaml(audit_path)
+comparison <- utils::read.csv(comparison_path, stringsAsFactors = FALSE)
+if (!isTRUE(results$meta$counts_reconcile)) {
+  stop("Tapausten yhteenlasku ei täsmää")
+}
+paragraphs <- worklife_executive_paragraphs(results)
+audit_text <- worklife_audit_paragraphs(comparison, audit)
+```
+
+## Tiivistelmä
+
+```{r summary, results='asis'}
+cat(paste0(paragraphs, collapse = "\n\n"))
+```
+
+## Kysymys, lähde ja havaintoyksikkö
+
+Kysymys on: missä kaksinumeroisissa ammattiluokissa on julkaistussa vuosien 2019–2023 otteessa eniten säilytettyjä vahvistettuja ammattitautitapauksia, missä työllisten lukumäärään suhteutettu viiden vuoden suhdeluku on suurin, ja miten nämä järjestykset muuttuvat, kun COVID-19-infektio erotetaan?
+
+Aineisto on Työterveyslaitoksen Työelämätieto-palvelun tietoaineisto **Työikäisten vahvistetut ammattitaudit**, luovutettu 20.5.2026. Lisenssi on Creative Commons Nimeä 4.0 (CC BY 4.0). Analyysi käyttää vain tiedostoa `data_A_2019_2023.tsv`, nimittäjää `workersPerOccupation_2019_2023.dsv` ja paketin muuttujakuvainta `variables.xlsx`. Tiedostoja B ja C ei ole yhdistetty, eikä päällekkäisiä viisivuotisikkunoita ole laskettu yhteen.
+
+Havaintoyksikkö tiedostossa A on yksi **säilytetty vahvistettu ammattitautitapaus**. Sama diagnoosi, altiste ja ammattiluokka toistuvat erillisinä riveinä, ja jokainen rivi on yksi tapaus. Rivejä ei ole poistettu kaksoiskappaleina. Jos samalle tapaukselle on rekisterissä kirjattu useita ammattitauteja, avoimeen aineistoon on jätetty seuraukseltaan vakavin. Alle viiden tapauksen solut on poistettu, ja Ahvenanmaa on jätetty pois. Rivimäärät eivät ole yksittäisiä ihmisiä eivätkä Työperäisten sairauksien rekisterin vuosijulkaisun kokonaismääriä.
+
+```{r provenance, results='asis'}
+cat(
+  "**Nouto:** ", provenance$retrieved_at, "  \n",
+  "**Osoite:** ", provenance$url, "  \n",
+  "**Koko:** ", provenance$bytes, " tavua  \n",
+  "**SHA-256:** `", provenance$sha256, "`  \n",
+  "**Lisenssi:** ", provenance$licence, "  \n",
+  "**Viittaus:** ", provenance$attribution, "\n",
+  sep = ""
+)
+```
+
+Tiedostossa A on `r results$meta$n_case_rows` riviä, joista COVID-19-infektioita on `r results$meta$n_covid_rows`. Yksilöllisiä rivejä on `r results$meta$n_unique_case_rows`, joten toistuvat rivit on säilytetty.
+
+## Aineiston laatu ja nimittäjän tarkastus
+
+Paketin työllisten lukumäärä on analyysin nimittäjä. Sitä ei ole vaihdettu uudempaan StatFin-lukuun. Suhdeluku on
+
+`1 000 × säilytetyt tapaukset / paketin työllisten lukumäärä`.
+
+Se yhdistää viiden vuoden osoittajan pyöristettyyn työllisten kantaan. Taulukon sarake "Viitteellinen vuositaso / 1 000" on sama luku jaettuna viidellä. Se on vain viitteellinen vuositasolle jaettu kuvailusuhde.
+
+```{r audit, results='asis'}
+cat(paste0(audit_text, collapse = "\n\n"))
+```
+
+Nimittäjän pyöristys tuhannen tarkkuuteen on karkea, kun työllisiä on enintään 10 000. Nämä ammattiluokat on merkitty taulukkoon. Suhdelukua ei lasketa, jos nimittäjä puuttuu tai on nolla, eikä silloin, kun ammattiluokka puuttuu tapausotteesta.
+
+```{r audit-counts, results='asis'}
+cat(
+  "Tarkastuksen tulos: täsmääviä ", audit$n_match,
+  ", selittämättömiä eroja ", audit$n_unexplained_difference,
+  ", StatFin-luokkaan kuulumattomia ", audit$n_not_in_statfin,
+  ", vajaita ", audit$n_incomplete, ".\n"
+)
+```
+
+## Tulostaulukko
+
+Järjestys antaa samalle arvolle saman sijan (`ties.method = "min"`). Seuraava sija hyppää yli. Lukumäärän sija lasketaan julkaistussa otteessa oleville ammattiluokille. Suhdeluvun sija lasketaan vain, kun nimittäjä on positiivinen ja tapaukset on julkaistu. COVID-19 tunnistetaan täsmälleen merkkijonosta `COVID-19-infektio`.
+
+```{r main-table}
+knitr::kable(
+  worklife_main_table(results$table),
+  format = "html",
+  caption = paste(
+    "Säilytetyt tapaukset, paketin työllisten lukumäärä, viiden vuoden suhdeluku ja sijat.",
+    "Suhdeluku on pyöristetty yhteen desimaaliin; sijat on laskettu pyöristämättömästä arvosta."
+  )
+)
+```
+
+```{r absent-table}
+absent <- worklife_absent_table(results$table)
+if (nrow(absent) == 0L) {
+  cat("Jokainen nimittäjän ammattiluokka esiintyy myös tapausotteessa.\n")
+} else {
+  knitr::kable(
+    absent,
+    format = "html",
+    caption = "Ammattiluokat, jotka ovat nimittäjässä mutta eivät julkaistussa tapausotteessa."
+  )
+}
+```
+
+```{r exclusions}
+excluded <- results$table[
+  results$table$in_case_extract %in% TRUE & nzchar(results$table$exclusion_reason),
+  c(
+  "occupation", "label_fi", "in_case_extract", "employment",
+  "denominator_status", "exclusion_reason"
+)]
+knitr::kable(
+  excluded,
+  format = "html",
+  col.names = c(
+    "Koodi", "Ammattiluokka", "Otteessa", "Työlliset",
+    "Nimittäjän tila", "Miksi suhdeluku puuttuu"
+  ),
+  caption = "Ammattiluokat, joille viiden vuoden suhdelukua ei lasketa."
+)
+```
+
+## Kuviot
+
+```{r fig-counts, fig.cap="Kuvio 1. Säilytetyt vahvistetut ammattitautitapaukset ammattiluokittain vuosina 2019–2023, jaettuna COVID-19-infektioon ja muihin diagnooseihin. Mukana ovat lukumäärän sijat 1–12, tasatilanteet mukaan lukien. Lähde: Työterveyslaitos, Työelämätieto, luovutettu 20.5.2026 (CC BY 4.0).", out.width="100%"}
+knitr::include_graphics("output/worklife/figures/counts.png")
+```
+
+```{r fig-ratios, fig.cap="Kuvio 2. Työllisten lukumäärään suhteutettu viiden vuoden suhdeluku. Oranssi palkki tarkoittaa, että paketin nimittäjä on enintään 10 000 työllistä ja tuhannen tarkkuinen pyöristys on suhteellisesti karkea. Lähde: Työterveyslaitos (CC BY 4.0) ja Tilastokeskus, taulukko 115s (CC BY 4.0).", out.width="100%"}
+knitr::include_graphics("output/worklife/figures/ratios.png")
+```
+
+```{r fig-ranks, fig.cap="Kuvio 3. Lukumäärän järjestys verrattuna suhdeluvun järjestykseen, kaikki diagnoosit ja ilman COVID-19-infektiota. Sama järjestysluku tarkoittaa tasatilannetta. Nimetään kahdeksan kärjessä olevat luokat. Lähde: Työterveyslaitos (CC BY 4.0) ja Tilastokeskus, taulukko 115s (CC BY 4.0).", out.width="100%"}
+knitr::include_graphics("output/worklife/figures/ranks.png")
+```
+
+```{r fig-exposure, fig.cap="Kuvio 4. Muiden kuin COVID-19-diagnoosien altisteryhmät niissä ammattiluokissa, joiden suhdeluku ilman COVID-19-infektiota on kuuden kärjessä. Julkaisemattomia soluja ei ole piirretty nollina. Lähde: Työterveyslaitos, Työelämätieto, luovutettu 20.5.2026 (CC BY 4.0).", out.width="100%"}
+knitr::include_graphics("output/worklife/figures/exposure.png")
+```
+
+## Tulkinta ja rajaukset
+
+Lukumäärä kertoo, mihin ammattiluokkiin säilytetyt tapaukset julkaistussa otteessa kasautuvat. Suhdeluku kertoo, miten sama määrä asettuu paketin työllisten lukumäärään nähden. Suuri ammattiluokka voi johtaa lukumäärää, vaikka sen suhdeluku ei olisi suurin. COVID-19-infektio on tässä ikkunassa niin yleinen diagnoosi, että kaikkien diagnoosien järjestys ja muiden diagnoosien järjestys vastaavat eri kysymyksiin.
+
+Tuloksia luetaan julkaistun otteen järjestyksenä. Pienten solujen poisto voi muuttaa sitä järjestystä, joka näkyisi ilman tietosuojakäsittelyä. Ammattiluokan puuttuminen otteesta ei osoita, että tapauksia ei olisi lainkaan. Diagnoosijoukon nolla tarkoittaa eri asiaa: ammattiluokka on otteessa, mutta kyseisen joukon säilytettyjä rivejä on nolla.
+
+Nimittäjä ei ole tapausten henkilöaika. Työssäkäyntitilaston työlliset ovat dokumentaation mukaan 18–74-vuotiaita, kun tapausote kuvaa 15–64-vuotiaita. Koko maan luku sisältää Ahvenanmaan, jos alueauditointi sen vahvistaa; tapausote ei sisällä Ahvenanmaata. Näistä syistä suhdeluku on kuvaileva eikä sitä tule lukea ilmaantuvuutena tai yksilön riskinä. Lukumäärätaulukko pysyy käyttökelpoisena myös silloin, kun nimittäjien vertailtavuus on epävarma.
+
+Analyysissa ei ole regressiota, ennustemallia, bootstrap-välejä eikä otantaan perustuvia luottamusvälejä. Aineisto ei sisällä otantapainoja.
+
+## Toistettavuus
+
+Raportti on rakennettu erillisellä `targets`-ajolla (`_targets_worklife.R`, varasto `_targets_worklife`). Nouto, nimittäjän tarkastus ja offline-raportti ovat eri komentoja. Pin-tiedoston tiivistettä ei päivitetä automaattisesti. Jos ladatun tiedoston koko tai SHA-256 eroaa pinnistä, ajo pysähtyy eikä aiempaa varmennettua tiedostoa korvata.
+
+```{r session}
+sessionInfo()
+```

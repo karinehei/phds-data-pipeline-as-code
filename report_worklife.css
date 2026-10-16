@@ -1,0 +1,22 @@
+#quarto-document-content .cell-output-display {
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+#quarto-document-content table {
+  width: max-content;
+  max-width: none;
+  font-size: 0.82rem;
+}
+
+#quarto-document-content caption {
+  caption-side: top;
+  text-align: left;
+  white-space: normal;
+  max-width: 42rem;
+}
+
+#quarto-document-content img {
+  max-width: 100%;
+  height: auto;
+}

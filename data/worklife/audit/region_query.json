@@ -1,0 +1,35 @@
+{
+  "query": [
+    {
+      "code": "ammatti_104_20161021",
+      "selection": {
+        "filter": "item",
+        "values": ["SSSSS"]
+      }
+    },
+    {
+      "code": "alue_23_20260101",
+      "selection": {
+        "filter": "item",
+        "values": ["SSS", "MK01", "MK02", "MK04", "MK05", "MK06", "MK07", "MK08", "MK09", "MK10", "MK11", "MK12", "MK13", "MK14", "MK15", "MK16", "MK17", "MK18", "MK19", "MK21"]
+      }
+    },
+    {
+      "code": "timeperiod_y",
+      "selection": {
+        "filter": "item",
+        "values": ["2019", "2020", "2021", "2022", "2023"]
+      }
+    },
+    {
+      "code": "sukupuoli_9_20180101",
+      "selection": {
+        "filter": "item",
+        "values": ["SSS"]
+      }
+    }
+  ],
+  "response": {
+    "format": "json"
+  }
+}
