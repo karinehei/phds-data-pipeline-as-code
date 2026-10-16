@@ -306,17 +306,18 @@ worklife_executive_paragraphs <- function(metrics) {
     "."
   )
   definition <- paste0(
-    "Suhdeluku on viiden vuoden säilytettyjen tapausten määrä jaettuna paketin ",
-    "työllisten lukumäärällä ja kerrottuna tuhannella. Se on työllisten määrään ",
-    "suhteutettu viiden vuoden kuvailusuhde. Se ei ole vuotuinen ilmaantuvuus, ",
-    "yksilön todennäköisyys eikä kausaalinen riski. Viidellä jakaminen olisi vain ",
+    "Suhdeluku on julkaistujen tapausten määrä suhteessa paketin työllisyysnimittäjään: ",
+    "tuhat kertaa viiden vuoden säilytetyt tapaukset jaettuna paketin työllisten lukumäärällä. ",
+    "Se ei ole vuotuinen ilmaantuvuus, yksilön todennäköisyys eikä kausaalinen riski, ",
+    "eikä suoraan vertailukelpoinen väestösuhde. Viidellä jakaminen olisi vain ",
     "viitteellinen vuositasolle jaettu kuvailusuhde, koska tapauksiin ei ole liitetty henkilöaikaa."
   )
   limits <- paste0(
     "Luvut kuvaavat julkaistua otetta, eivät yksittäisiä ihmisiä eivätkä rekisterin ",
     "täydellistä kansallista kokonaismäärää. Alle viiden tapauksen solut on poistettu, ",
-    "Ahvenanmaa puuttuu, ja samalle tapaukselle kirjatuista taudeista on säilytetty vakavin. ",
-    "Aineistosta puuttuvaa ammattiluokkaa ei tulkita nollaksi."
+    "ja samalle tapaukselle kirjatuista taudeista on säilytetty vakavin. ",
+    "Aineistosta puuttuvaa ammattiluokkaa ei tulkita nollaksi. ",
+    "Tuhannen tarkkuinen nimittäjä ja poistetut pienet solut voivat muuttaa järjestystä."
   )
   c(count_sentence, ratio_sentence, other_sentence, definition, limits)
 }

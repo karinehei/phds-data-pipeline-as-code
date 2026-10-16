@@ -72,7 +72,7 @@ render_worklife_report <- function(metrics,
   saveRDS(exposure, file.path(out_dir, "exposure.rds"))
   sizes <- list(
     counts = c(width = 10, height = 8.2),
-    ratios = c(width = 10, height = 8.2),
+    ratios = c(width = 10, height = 9),
     ranks = c(width = 11, height = 13),
     exposure = c(width = 11, height = 8)
   )

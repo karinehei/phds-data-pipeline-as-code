@@ -38,6 +38,17 @@ worklife_source_caption <- function() {
   )
 }
 
+worklife_ratio_caption <- function() {
+  paste(
+    "Julkaistujen tapausten määrä suhteessa paketin työllisyysnimittäjään.",
+    "Tapaukset: 15–64-vuotiaat, ilman Ahvenanmaata. Nimittäjä: 18–74-vuotiaat, koko maa mukaan lukien Ahvenanmaa.",
+    "Tuhannen pyöristys ja poistetut pienet solut voivat muuttaa järjestystä.",
+    "Ei yksilön riski, vuotuinen ilmaantuvuus eikä vertailukelpoinen väestösuhde.",
+    worklife_source_caption(),
+    sep = "\n"
+  )
+}
+
 #' Rows whose rank is within the plotted head, including ties at the boundary.
 #'
 #' @param table Metrics table.
@@ -118,14 +129,14 @@ plot_period_ratio <- function(table, max_rank = 12L) {
     )) +
     ggplot2::scale_y_continuous(expand = ggplot2::expansion(mult = c(0, 0.06))) +
     ggplot2::labs(
-      title = "Työllisten määrään suhteutettu viiden vuoden suhdeluku",
-      subtitle = "1 000 × säilytetyt tapaukset / paketin työllisten lukumäärä. Ei vuotuinen ilmaantuvuus.",
+      title = "Julkaistut tapaukset suhteessa paketin työllisyysnimittäjään",
+      subtitle = "1 000 × viiden vuoden säilytetyt tapaukset / paketin työllisten lukumäärä.",
       x = NULL,
       y = "Säilytetyt tapaukset / 1 000 työllistä",
       fill = NULL,
       caption = paste(
         "Oranssi palkki: nimittäjä on pyöristetty enintään 10 000 työlliseen.",
-        worklife_source_caption(),
+        worklife_ratio_caption(),
         sep = "\n"
       )
     ) +
@@ -204,7 +215,8 @@ plot_rank_slope <- function(table) {
       y = "Järjestys (1 = suurin)",
       caption = paste(
         "Nimetään ammattiluokat, jotka ovat kahdeksan kärjessä jommallakummalla akselilla.",
-        "Täydet järjestykset ovat taulukossa.",
+        "Suhdeluvun sija käyttää paketin nimittäjää. Pyöristys ja poistetut solut voivat muuttaa järjestystä.",
+        "Täydet nimet ja järjestykset ovat taulukossa.",
         worklife_source_caption(),
         sep = "\n"
       )
