@@ -70,10 +70,17 @@ list(
     make_plots(df)
   ),
 
+  tar_target(
+    report_qmd,
+    "report.qmd",
+    format = "file"
+  ),
+
   # 7) Ensure output/ exists, save artifacts, render report
   tar_target(
     render_report,
     {
+      report_qmd
       dir.create("output", showWarnings = FALSE, recursive = TRUE)
       dir.create("output/figures", showWarnings = FALSE, recursive = TRUE)
       saveRDS(metrics, "output/metrics.rds")
@@ -87,7 +94,7 @@ list(
           )
         }
       }
-      quarto::quarto_render("report.qmd")
+      quarto::quarto_render(report_qmd)
       file.copy("report.html", "output/report.html", overwrite = TRUE)
       if (dir.exists("report_files")) {
         file.copy("report_files", "output", recursive = TRUE, overwrite = TRUE)

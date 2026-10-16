@@ -18,7 +18,7 @@ Rankings are computed before display rounding, with `ties.method = "min"`. Count
 
 The first GitHub Actions restore of this lockfile failed while loading `igraph` 2.3.4: `libglpk.so.40` was missing. `targets` imports `igraph`. The workflow now installs `libglpk-dev` together with `libcurl4-openssl-dev`. This review did not re-run Actions, so that fix is unverified in CI.
 
-`make site` now omits `output/worklife/` from the Pages staging directory. The Pages job itself is unchanged and still publishes the pediatric `output/` artifact from `make report`.
+The publication workflow now acquires the pinned zip, builds both reports, and publishes `site/index.html` as the Pages root. That front page links to the worklife report and the pediatric report. The saved denominator audit is used; the publication job does not repeat the live StatFin query.
 
 `_targets/meta/meta` in commit `07b0f8a` contained only targets bookkeeping from running the pediatric pipeline after the worklife modules existed: new function hashes and updated plot, validation, and report rows. The pre-feature version from `a0876a9` is restored in the working tree. That does not rewrite the commit. The pre-existing uncommitted metadata that was already dirty at the start of implementation had been overwritten by that pipeline run before the commit, so it could not be recovered separately. No analysis source was reverted.
 

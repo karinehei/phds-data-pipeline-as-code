@@ -21,12 +21,11 @@ report:
 	mkdir -p output
 	Rscript -e "targets::tar_make()"
 
-# Prepare _site/ for GitHub Pages (copy output/ and create index.html)
+# Stage both reports and the shared front page for GitHub Pages
 site:
 	mkdir -p _site && \
 	if [ -d output ]; then cp -r output/. _site/; fi && \
-	rm -rf _site/worklife && \
-	if [ -f _site/report.html ]; then cp _site/report.html _site/index.html; fi
+	cp site/index.html _site/index.html
 
 # Remove output, generated data, and targets cache
 clean:

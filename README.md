@@ -69,7 +69,7 @@ make clean    # Remove output/, data/synthetic/*, _targets/
 | `make data` | Generate synthetic pediatric visits to `data/synthetic/visits.parquet` |
 | `make test` | Run `Rscript run-tests.R` (testthat) |
 | `make report` | Run `targets::tar_make()` (pipeline + report) |
-| `make site` | Prepare `_site/` for Pages from the pediatric `output/`, omitting `output/worklife/` |
+| `make site` | Stage `_site/` with `site/index.html`, the pediatric report and the worklife report |
 | `make clean` | Remove `output/`, `_targets/`, generated data in `data/synthetic/`, stray `report.html` |
 | `make k8s-validate` | Run `kubectl kustomize` on base and dev overlay (requires kubectl) |
 | `make worklife-acquire` | Download the pinned occupational-disease snapshot and keep it only if the size and SHA-256 match |
@@ -108,16 +108,16 @@ Rscript run-tests.R
 
 ## CI/CD
 
-- **On PR and push to `main`**: Checkout → install `libcurl4-openssl-dev` and `libglpk-dev` → setup R 4.6.1 (r-lib/actions) → `renv::restore()` from `renv.lock` → optional lint if `lintr` is present → tests → `make report` → upload artifacts (`output/`, `data/synthetic/visits.parquet`). The worklife report is not built in this job. `libglpk-dev` is required because the locked `igraph` binary, imported by `targets`, loads `libglpk.so.40`.
-- **On push to `main` only**: Deploy report to GitHub Pages (enable Pages in repo Settings → Pages → Source: GitHub Actions).
+- **On PR and push to `main`**: Checkout → install `libcurl4-openssl-dev` and `libglpk-dev` → setup R 4.6.1 (r-lib/actions) → `renv::restore()` from `renv.lock` → `make worklife-acquire` (pinned zip, checksum checked, saved StatFin audit left unchanged) → tests → `make report` → `make worklife` → upload artifacts (`output/`, `data/synthetic/visits.parquet`). `libglpk-dev` is required because the locked `igraph` package, imported by `targets`, links `libglpk.so.40` when GLPK is available at build time.
+- **On push to `main` only**: Deploy `output/` to GitHub Pages. `site/index.html` becomes the site root and links to both reports.
 
 ---
 
 ## Publishing the report
 
-Enable **Settings → Pages → Source: GitHub Actions**. After pushing to `main`, the report is published at `https://<user>.github.io/<repo>/`.
+Enable **Settings → Pages → Source: GitHub Actions**. After pushing to `main`, the site is published at `https://<user>.github.io/<repo>/`.
 
-The report is also available as a CI artifact (`phds-report`) on every run (PR and push)—download it from the Actions run summary. The CI workflow copies `report.html` to `index.html` before deploy so the site root serves the report.
+The root page links first to the occupational-disease report (`worklife/report.html`) and then to the synthetic pediatric report (`report.html`). Both HTML files are also in the `phds-report` artifact on every run.
 
 ---
 
@@ -135,7 +135,7 @@ The pediatric example above is unchanged. A second, separate pipeline describes 
 
 **Source.** Työterveyslaitos / Työelämätieto, dataset *Työikäisten vahvistetut ammattitaudit*, handed over 20 May 2026, licence CC BY 4.0. The pinned file is `occupational-diseases-data-20052026.zip` (292,234 bytes). Employment denominators inside the package come from Statistics Finland table 115s (CC BY 4.0).
 
-**Report.** `output/worklife/report.html` after `make worklife`. CI builds only the pediatric report. `make site` copies that report and leaves out `output/worklife/`.
+**Report.** `output/worklife/report.html` after `make worklife`. CI downloads the pinned zip, checks its checksum, and builds this report from the saved denominator audit. The live StatFin query is not part of the publication job.
 
 **Limits.** Each row in file A is one retained case, not one person. Small cells were removed, Åland is absent from the case extract, and only the most severe recorded disease is kept. The ratio is the count of published cases relative to the packaged employment denominator. The saved 16 October 2026 audit found that this denominator matches rounded mean annual employment for 2019–2023, describes ages 18–74, and includes Åland, while the cases are ages 15–64 and exclude Åland. It is not an annual incidence, an individual probability, a causal risk, or a directly comparable population rate. Sampling intervals are not estimated. Files B and C are not joined to file A.
 
