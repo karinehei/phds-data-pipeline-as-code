@@ -12,5 +12,10 @@ for (f in list.files("R", pattern = "\\.R$", full.names = TRUE)) {
 }
 
 result <- testthat::test_dir("tests/testthat", reporter = "summary")
-if (!all(as.data.frame(result)$passed)) stop("Some tests failed")
+summary_df <- as.data.frame(result)
+# A skipped test has passed == 0. The snapshot check is skipped in CI
+# because the verified zip is not in the repository.
+if (any(summary_df$failed > 0) || any(summary_df$error)) {
+  stop("Some tests failed")
+}
 invisible(result)
