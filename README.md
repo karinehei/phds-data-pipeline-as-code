@@ -53,10 +53,10 @@ To make this permanent, add the `export` line to your `~/.bashrc` or `~/.profile
 
 ## Quick Start
 
-> **Note:** If `renv.lock` has empty `Packages`, run `make setup` to install deps. TODO: Run `renv::snapshot()` after installing to pin versions for reproducible builds.
+The pinned environment is **R 4.6.1**, the same version declared in `.github/workflows/ci.yml` and recorded in `renv.lock`. `make setup` runs `renv::restore()` and does not install extra packages outside the lockfile. CI restores that lockfile and does not fill gaps with a second package install. Optional lint uses `lintr` only when it is already available; it is not part of the lockfile.
 
 ```bash
-make setup    # Install deps (renv if renv.lock exists, else minimal pkgs)
+make setup    # Restore the renv.lock library (R 4.6.1)
 make data     # Generate synthetic data → data/synthetic/visits.parquet
 make test     # Run testthat unit tests
 make report   # Run targets pipeline + render report → output/report.html
@@ -65,11 +65,11 @@ make clean    # Remove output/, data/synthetic/*, _targets/
 
 | Target | Description |
 |--------|-------------|
-| `make setup` | Run `renv::restore()` if `renv.lock` exists; install any missing packages (targets, yaml, arrow, quarto, testthat, ggplot2) |
+| `make setup` | Restore the R 4.6.1 library recorded in `renv.lock` |
 | `make data` | Generate synthetic pediatric visits to `data/synthetic/visits.parquet` |
 | `make test` | Run `Rscript run-tests.R` (testthat) |
 | `make report` | Run `targets::tar_make()` (pipeline + report) |
-| `make site` | Prepare `_site/` for Pages: copy `output/` and create `index.html` from `report.html` |
+| `make site` | Prepare `_site/` for Pages from the pediatric `output/`, omitting `output/worklife/` |
 | `make clean` | Remove `output/`, `_targets/`, generated data in `data/synthetic/`, stray `report.html` |
 | `make k8s-validate` | Run `kubectl kustomize` on base and dev overlay (requires kubectl) |
 | `make worklife-acquire` | Download the pinned occupational-disease snapshot and keep it only if the size and SHA-256 match |
@@ -108,7 +108,7 @@ Rscript run-tests.R
 
 ## CI/CD
 
-- **On PR and push to `main`**: Checkout → setup R (r-lib/actions) → install deps → lint (optional, non-blocking) → tests → `make report` → upload artifacts (`output/`, `data/synthetic/visits.parquet`).
+- **On PR and push to `main`**: Checkout → install `libcurl4-openssl-dev` and `libglpk-dev` → setup R 4.6.1 (r-lib/actions) → `renv::restore()` from `renv.lock` → optional lint if `lintr` is present → tests → `make report` → upload artifacts (`output/`, `data/synthetic/visits.parquet`). The worklife report is not built in this job. `libglpk-dev` is required because the locked `igraph` binary, imported by `targets`, loads `libglpk.so.40`.
 - **On push to `main` only**: Deploy report to GitHub Pages (enable Pages in repo Settings → Pages → Source: GitHub Actions).
 
 ---
@@ -135,9 +135,11 @@ The pediatric example above is unchanged. A second, separate pipeline describes 
 
 **Source.** Työterveyslaitos / Työelämätieto, dataset *Työikäisten vahvistetut ammattitaudit*, handed over 20 May 2026, licence CC BY 4.0. The pinned file is `occupational-diseases-data-20052026.zip` (292,234 bytes). Employment denominators inside the package come from Statistics Finland table 115s (CC BY 4.0).
 
-**Report.** `output/worklife/report.html` after `make worklife`. It is not part of the GitHub Pages artifact, which remains the pediatric `output/report.html`.
+**Report.** `output/worklife/report.html` after `make worklife`. CI builds only the pediatric report. `make site` copies that report and leaves out `output/worklife/`.
 
-**Limits.** Each row in file A is one retained case, not one person. Small cells were removed, Åland is absent from the case extract, and only the most severe recorded disease is kept. The ratio `1000 * cases / packaged employment` is a five-year descriptive ratio. It is not an annual incidence, an individual probability, or a causal risk. The packaged denominator is a rounded employment stock (ages 18–74 in the employment statistics, whole country), while the cases are described as ages 15–64 and exclude Åland. Sampling intervals are not estimated. Files B and C are not joined to file A.
+**Limits.** Each row in file A is one retained case, not one person. Small cells were removed, Åland is absent from the case extract, and only the most severe recorded disease is kept. The ratio is the count of published cases relative to the packaged employment denominator. The saved 16 October 2026 audit found that this denominator matches rounded mean annual employment for 2019–2023, describes ages 18–74, and includes Åland, while the cases are ages 15–64 and exclude Åland. It is not an annual incidence, an individual probability, a causal risk, or a directly comparable population rate. Sampling intervals are not estimated. Files B and C are not joined to file A.
+
+The review of these checks is in `docs/worklife-review.md`.
 
 The plan and the checks behind the pin are in `docs/worklife-analysis-plan.md`.
 

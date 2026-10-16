@@ -38,7 +38,10 @@ comparison <- utils::read.csv(comparison_path, stringsAsFactors = FALSE)
 if (!isTRUE(results$meta$counts_reconcile)) {
   stop("Tapausten yhteenlasku ei täsmää")
 }
-paragraphs <- worklife_executive_paragraphs(results)
+paragraphs <- c(
+  worklife_executive_paragraphs(results),
+  worklife_comparability_paragraphs(audit, comparison)
+)
 audit_text <- worklife_audit_paragraphs(comparison, audit)
 ```
 
@@ -72,11 +75,11 @@ Tiedostossa A on `r results$meta$n_case_rows` riviä, joista COVID-19-infektioit
 
 ## Aineiston laatu ja nimittäjän tarkastus
 
-Paketin työllisten lukumäärä on analyysin nimittäjä. Sitä ei ole vaihdettu uudempaan StatFin-lukuun. Suhdeluku on
+Paketin työllisten lukumäärä on analyysin nimittäjä. Sitä ei ole vaihdettu uudempaan StatFin-lukuun. Suhdeluku on julkaistujen tapausten määrä suhteessa paketin työllisyysnimittäjään:
 
 `1 000 × säilytetyt tapaukset / paketin työllisten lukumäärä`.
 
-Se yhdistää viiden vuoden osoittajan pyöristettyyn työllisten kantaan. Taulukon sarake "Viitteellinen vuositaso / 1 000" on sama luku jaettuna viidellä. Se on vain viitteellinen vuositasolle jaettu kuvailusuhde.
+Osoittaja on viiden vuoden tietosuojakäsiteltyjä säilytettyjä tapauksia. Tapausotteen kuvaus rajaa ne 15–64-vuotiaisiin ja jättää Ahvenanmaan pois. Nimittäjä on pyöristetty työllisten kanta. Tallennetun tarkastuksen mukaan taulukon 115s työlliset ovat 18–74-vuotiaita ja koko maan luku sisältää Ahvenanmaan. Taulukon sarake "Viitteellinen vuositaso / 1 000" on sama suhdeluku jaettuna viidellä. Se on vain viitteellinen vuositasolle jaettu kuvailusuhde, ei mitattu henkilöaika.
 
 ```{r audit, results='asis'}
 cat(paste0(audit_text, collapse = "\n\n"))
@@ -95,7 +98,7 @@ cat(
 
 ## Tulostaulukko
 
-Järjestys antaa samalle arvolle saman sijan (`ties.method = "min"`). Seuraava sija hyppää yli. Lukumäärän sija lasketaan julkaistussa otteessa oleville ammattiluokille. Suhdeluvun sija lasketaan vain, kun nimittäjä on positiivinen ja tapaukset on julkaistu. COVID-19 tunnistetaan täsmälleen merkkijonosta `COVID-19-infektio`.
+Järjestys antaa samalle arvolle saman sijan (`ties.method = "min"`). Seuraava sija hyppää yli. Sijat lasketaan pyöristämättömästä arvosta. Lukumäärän sija koskee vain julkaistussa otteessa olevia ammattiluokkia. Suhdeluvun sija koskee vain niitä otteen luokkia, joiden paketin nimittäjä on positiivinen. Puuttuva tai nollanimittäjä ja otteesta puuttuva ammattiluokka eivät saa suhdeluvun sijaa. COVID-19 tunnistetaan täsmälleen merkkijonosta `COVID-19-infektio`. Nimittäjän pyöristys tuhansiin ja alle viiden tapauksen solujen poisto voivat muuttaa sitä järjestystä, joka näkyisi ilman näitä käsittelyjä.
 
 ```{r main-table}
 knitr::kable(
@@ -103,7 +106,8 @@ knitr::kable(
   format = "html",
   caption = paste(
     "Säilytetyt tapaukset, paketin työllisten lukumäärä, viiden vuoden suhdeluku ja sijat.",
-    "Suhdeluku on pyöristetty yhteen desimaaliin; sijat on laskettu pyöristämättömästä arvosta."
+    "Suhdeluku on pyöristetty yhteen desimaaliin; sijat on laskettu pyöristämättömästä arvosta.",
+    "Tuhannen pyöristys ja poistetut pienet solut voivat muuttaa järjestystä."
   )
 )
 ```
@@ -145,11 +149,11 @@ knitr::kable(
 knitr::include_graphics("output/worklife/figures/counts.png")
 ```
 
-```{r fig-ratios, fig.cap="Kuvio 2. Työllisten lukumäärään suhteutettu viiden vuoden suhdeluku. Oranssi palkki tarkoittaa, että paketin nimittäjä on enintään 10 000 työllistä ja tuhannen tarkkuinen pyöristys on suhteellisesti karkea. Lähde: Työterveyslaitos (CC BY 4.0) ja Tilastokeskus, taulukko 115s (CC BY 4.0).", out.width="100%"}
+```{r fig-ratios, fig.cap="Kuvio 2. Julkaistujen tapausten määrä suhteessa paketin työllisyysnimittäjään. Tapaukset ovat 15–64-vuotiaita ilman Ahvenanmaata; nimittäjä on 18–74-vuotiaiden koko maan pyöristetty työllisten kanta, Ahvenanmaa mukaan lukien. Oranssi palkki: nimittäjä on enintään 10 000. Pyöristys ja poistetut solut voivat muuttaa järjestystä. Suhdeluku ei ole yksilön riski, vuotuinen ilmaantuvuus eikä vertailukelpoinen väestösuhde. Lähde: Työterveyslaitos (CC BY 4.0) ja Tilastokeskus, taulukko 115s (CC BY 4.0).", out.width="100%"}
 knitr::include_graphics("output/worklife/figures/ratios.png")
 ```
 
-```{r fig-ranks, fig.cap="Kuvio 3. Lukumäärän järjestys verrattuna suhdeluvun järjestykseen, kaikki diagnoosit ja ilman COVID-19-infektiota. Sama järjestysluku tarkoittaa tasatilannetta. Nimetään kahdeksan kärjessä olevat luokat. Lähde: Työterveyslaitos (CC BY 4.0) ja Tilastokeskus, taulukko 115s (CC BY 4.0).", out.width="100%"}
+```{r fig-ranks, fig.cap="Kuvio 3. Lukumäärän järjestys verrattuna suhdeluvun järjestykseen, kaikki diagnoosit ja ilman COVID-19-infektiota. Sama järjestysluku tarkoittaa tasatilannetta. Suhdeluvun sija käyttää paketin nimittäjää, jonka ikä- ja aluerajaus eroaa tapausotteesta. Nimetään kahdeksan kärjessä olevat luokat; pitkät nimet on lyhennetty ja täydet nimet ovat taulukossa. Lähde: Työterveyslaitos (CC BY 4.0) ja Tilastokeskus, taulukko 115s (CC BY 4.0).", out.width="100%"}
 knitr::include_graphics("output/worklife/figures/ranks.png")
 ```
 
@@ -163,7 +167,7 @@ Lukumäärä kertoo, mihin ammattiluokkiin säilytetyt tapaukset julkaistussa ot
 
 Tuloksia luetaan julkaistun otteen järjestyksenä. Pienten solujen poisto voi muuttaa sitä järjestystä, joka näkyisi ilman tietosuojakäsittelyä. Ammattiluokan puuttuminen otteesta ei osoita, että tapauksia ei olisi lainkaan. Diagnoosijoukon nolla tarkoittaa eri asiaa: ammattiluokka on otteessa, mutta kyseisen joukon säilytettyjä rivejä on nolla.
 
-Nimittäjä ei ole tapausten henkilöaika. Työssäkäyntitilaston työlliset ovat dokumentaation mukaan 18–74-vuotiaita, kun tapausote kuvaa 15–64-vuotiaita. Koko maan luku sisältää Ahvenanmaan, jos alueauditointi sen vahvistaa; tapausote ei sisällä Ahvenanmaata. Näistä syistä suhdeluku on kuvaileva eikä sitä tule lukea ilmaantuvuutena tai yksilön riskinä. Lukumäärätaulukko pysyy käyttökelpoisena myös silloin, kun nimittäjien vertailtavuus on epävarma.
+Nimittäjä ei ole tapausten henkilöaika. Tallennettu tarkastus erottaa kolme asiaa. Laskenta täsmäsi: paketin nimittäjät vastasivat vuosien 2019–2023 työllisten keskiarvoa pyöristettynä tuhansiin. Lähdemääritelmät kertovat, että tapaukset ovat 15–64-vuotiaita ilman Ahvenanmaata ja työlliset 18–74-vuotiaita koko maassa, Ahvenanmaa mukaan lukien, koska alueiden summa vastasi koko maan lukua. Väestörajojen rajoitus jää: suhdeluku on julkaistujen tapausten määrä suhteessa paketin työllisyysnimittäjään. Sitä ei lueta yksilön sairastumisriskinä, vuotuisena ilmaantuvuutena eikä suoraan vertailukelpoisena väestösuhteena. Lukumäärät pysyvät käyttökelpoisina.
 
 Analyysissa ei ole regressiota, ennustemallia, bootstrap-välejä eikä otantaan perustuvia luottamusvälejä. Aineisto ei sisällä otantapainoja.
 

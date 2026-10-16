@@ -14,8 +14,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install system dependencies (arrow)
-        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libcurl4-openssl-dev
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libcurl4-openssl-dev \
+            libglpk-dev
 
       - name: Set up R
         uses: r-lib/actions/setup-r@v2
@@ -29,14 +33,11 @@ jobs:
         if: hashFiles('renv.lock') != ''
         uses: r-lib/actions/setup-renv@v2
 
-      - name: Install dependencies (fallback)
+      - name: Require the lockfile
         if: hashFiles('renv.lock') == ''
         run: |
-          Rscript -e "pkgs <- c('targets','yaml','arrow','quarto','testthat','ggplot2','lintr','digest','readxl','jsonlite','curl'); for (p in pkgs) if (!requireNamespace(p, quietly=TRUE)) install.packages(p, repos='https://cloud.r-project.org')"
-
-      - name: Install any missing packages
-        run: |
-          Rscript -e "pkgs <- c('targets','yaml','arrow','quarto','testthat','ggplot2','lintr','digest','readxl','jsonlite','curl'); for (p in pkgs) if (!requireNamespace(p, quietly=TRUE)) install.packages(p, repos='https://cloud.r-project.org')"
+          echo "renv.lock is missing. CI restores only the pinned library."
+          exit 1
 
       - name: Lint
         run: Rscript -e "if (requireNamespace('lintr', quietly=TRUE)) lintr::lint_dir('R') else message('lintr not installed, skipping')"

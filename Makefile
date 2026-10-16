@@ -4,9 +4,9 @@
 
 .PHONY: setup data test report site clean k8s-validate worklife-acquire worklife-audit worklife worklife-clean
 
-# Install R dependencies: renv restore if lock has packages, else install minimal set
+# Restore the library pinned in renv.lock. Requires R 4.6.1.
 setup:
-	Rscript -e "pkgs <- c('targets','yaml','arrow','quarto','testthat','ggplot2'); if (file.exists('renv.lock')) { install.packages('renv', repos='https://cloud.r-project.org'); renv::restore() }; for (p in pkgs) if (!requireNamespace(p, quietly=TRUE)) install.packages(p, repos='https://cloud.r-project.org')"
+	Rscript -e "if (!file.exists('renv.lock')) stop('renv.lock is required'); if (!requireNamespace('renv', quietly=TRUE)) install.packages('renv', repos='https://cloud.r-project.org'); renv::restore()"
 
 # Generate synthetic data to data/synthetic/visits.parquet
 data:
@@ -25,6 +25,7 @@ report:
 site:
 	mkdir -p _site && \
 	if [ -d output ]; then cp -r output/. _site/; fi && \
+	rm -rf _site/worklife && \
 	if [ -f _site/report.html ]; then cp _site/report.html _site/index.html; fi
 
 # Remove output, generated data, and targets cache

@@ -212,3 +212,36 @@ worklife_audit_paragraphs <- function(comparison, audit) {
   )
   qualifiers[!is.na(qualifiers) & nzchar(qualifiers)]
 }
+
+#' Separate verified arithmetic, source definitions and population limits.
+#'
+#' Uses the saved audit. It does not query StatFin again.
+#'
+#' @param audit Audit metadata list.
+#' @param comparison Comparison data frame.
+#' @return Character vector of Finnish paragraphs.
+#' @export
+worklife_comparability_paragraphs <- function(audit, comparison) {
+  arithmetic <- paste0(
+    "Tarkistettu laskenta tallennetussa vertailussa ", audit$retrieved_at, ": ",
+    sum(comparison$status == "match"),
+    " paketin ammattiluokkaa vastasi vuosien 2019–2023 työllisten keskiarvoa ",
+    "pyöristettynä tuhansiin, selittämättömiä eroja oli ",
+    sum(comparison$status == "unexplained_difference"),
+    ". Paketin nimittäjää ei vaihdettu."
+  )
+  definitions <- paste(
+    "Tarkistetut lähdemääritelmät ovat tallennetusta tarkastuksesta, ei uudesta kyselystä.",
+    audit$age_note,
+    audit$geography_note,
+    audit$reference_note
+  )
+  limitation <- paste0(
+    "Väestörajojen rajoitus: osoittaja ja nimittäjä eivät kuvaa samaa ikää eivätkä ",
+    "samaa aluetta. Suhdeluku on julkaistujen tapausten määrä suhteessa paketin ",
+    "työllisyysnimittäjään. Se ei ole yksilön sairastumisriski, vuotuinen ilmaantuvuus ",
+    "eikä suoraan vertailukelpoinen väestösuhde. Lukumäärät pysyvät käyttökelpoisina ",
+    "tästä rajauksesta huolimatta."
+  )
+  c(arithmetic, definitions, limitation)
+}
